@@ -1,3 +1,3 @@
-# ezBastion GO librairy 
+# ezBastion GO library 
 
 Use as internal lib
