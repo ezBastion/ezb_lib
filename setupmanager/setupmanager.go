@@ -25,49 +25,6 @@ import (
 	"strings"
 )
 
-// AskForConfirmation
-func AskForConfirmation(s string) bool {
-	reader := bufio.NewReader(os.Stdin)
-
-	for {
-		fmt.Printf("\n%s [y/n]: ", s)
-
-		response, err := reader.ReadString('\n')
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		response = strings.ToLower(strings.TrimSpace(response))
-
-		if response == "y" || response == "yes" {
-			return true
-		} else if response == "n" || response == "no" {
-			return false
-		}
-	}
-}
-
-// AskForValue
-func AskForValue(s string, pattern string) string {
-	reader := bufio.NewReader(os.Stdin)
-	re := regexp.MustCompile(pattern)
-	for {
-		fmt.Printf("%s: ", s)
-
-		response, err := reader.ReadString('\n')
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		response = strings.TrimSpace(response)
-
-		if re.MatchString(response) {
-			return response
-		}
-		fmt.Printf("[%s] wrong format, must match (%s)\n", response, pattern)
-	}
-}
-
 // CheckFolder
 func CheckFolder(exPath string) error {
 
@@ -93,4 +50,46 @@ func CheckFolder(exPath string) error {
 		log.Println("Make conf folder.")
 	}
 	return nil
+}
+
+func AskForConfirmation(s string) bool {
+	reader := bufio.NewReader(os.Stdin)
+
+	for {
+		fmt.Printf("\n%s [y/n]: ", s)
+
+		response, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		response = strings.ToLower(strings.TrimSpace(response))
+
+		if response == "y" || response == "yes" {
+			return true
+		} else if response == "n" || response == "no" {
+			return false
+		}
+	}
+}
+func AskForValue(s, def string, pattern string) string {
+	reader := bufio.NewReader(os.Stdin)
+	re := regexp.MustCompile(pattern)
+	for {
+		fmt.Printf("%s [%s]: ", s, def)
+
+		response, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		response = strings.TrimSpace(response)
+		if response == "" {
+			return def
+		} else if re.MatchString(response) {
+			return response
+		} else {
+			fmt.Printf("[%s] wrong format, must match (%s)\n", response, pattern)
+		}
+	}
 }
