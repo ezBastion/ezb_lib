@@ -61,6 +61,8 @@ func SetLogLevel(LogLevel string, exPath string, fileName string, maxSize int, m
 		MaxBackups: maxBackups,
 		MaxAge:     maxAge,
 	})
+
+	log.Info("Log system initialized.")
 	return nil
 
 }
