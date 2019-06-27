@@ -18,11 +18,12 @@
 package servicemanager
 
 import (
-	"ezb_vault/server"
 	"fmt"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/ezbastion/ezb_vault/server"
 
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/sys/windows/svc"
