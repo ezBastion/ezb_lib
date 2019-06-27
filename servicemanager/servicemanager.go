@@ -24,16 +24,14 @@ import (
 	"time"
 
 	"github.com/ezbastion/ezb_vault/server"
-
+	eventlog "github.com/ezbastion/ezb_lib/eventlogmanager"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/sys/windows/svc"
 	"golang.org/x/sys/windows/svc/debug"
-	"golang.org/x/sys/windows/svc/eventlog"
 	"golang.org/x/sys/windows/svc/mgr"
 )
 
 // EventLog management
-var elog debug.Log
 var exPath string
 
 type myservice struct{}
@@ -161,36 +159,25 @@ loop:
 	return
 }
 
-// RunService runs the service targeted by name
-func RunService(name string, isDebug bool) {
+// RunService runs the service targeted by name. From 06/27/2019, debug is not needed as the debug is always done, log system will
+// handle th level
+func RunService(name string) {
 	log.Debugln(fmt.Sprintf("DBTP:Entering func runService name :%s, isDebug : %t", name, isDebug))
 
-	var err error
-	if isDebug {
-		elog = debug.New(name)
-	} else {
-		elog, err = eventlog.Open(name)
-		if err != nil {
-			return
-		}
-	}
 	defer elog.Close()
 
-	elog.Info(1, fmt.Sprintf("starting %s service", name))
-	log.Debugln(fmt.Sprintf("starting %s service", name))
+	eventlog.Info(1, fmt.Sprintf("starting %s service", name))
+	log.Infoln(fmt.Sprintf("starting %s service", name))
 	run := svc.Run
-	if isDebug {
-		run = debug.Run
-	}
 
 	err = run(name, &myservice{})
 	if err != nil {
-		elog.Error(1, fmt.Sprintf("%s service failed: %v", name, err))
-		log.Debugln(fmt.Sprintf("%s service failed", name))
+		eventlog.Error(1, fmt.Sprintf("%s service failed: %s", name, err.Error()))
+		log.Errorln(fmt.Sprintf("%s service failed : %s", name, err.Error()))
 		return
 	}
-	elog.Info(1, fmt.Sprintf("%s service stopped", name))
-	log.Debugln(fmt.Sprintf("%s service stoped", name))
+	eventlog.Info(1, fmt.Sprintf("%s service stopped", name))
+	log.Infoln(fmt.Sprintf("%s service stoped", name))
 }
 
 // InstallService installs the service targeted by name
