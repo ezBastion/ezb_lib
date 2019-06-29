@@ -43,6 +43,12 @@ func Open(name string) error {
 	return nil
 }
 
+// Close closes the event
+func Close() error {
+
+	return elog.Close()
+}
+
 // Info logs an info event into the windows eventlog system
 func Info(logline string) error {
 	if status == 0 {

@@ -23,16 +23,17 @@ import (
 	"path/filepath"
 	"time"
 
+	ezbevent "github.com/ezbastion/ezb_lib/eventlogmanager"
 	"github.com/ezbastion/ezb_vault/server"
-	eventlog "github.com/ezbastion/ezb_lib/eventlogmanager"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/sys/windows/svc"
-	"golang.org/x/sys/windows/svc/debug"
+	eventlog "golang.org/x/sys/windows/svc/eventlog"
 	"golang.org/x/sys/windows/svc/mgr"
 )
 
 // EventLog management
 var exPath string
+var err error
 
 type myservice struct{}
 
@@ -151,7 +152,7 @@ loop:
 				close(serverchan)
 				break loop
 			default:
-				elog.Error(1, fmt.Sprintf("unexpected control request #%d", c))
+				ezbevent.Error(fmt.Sprintf("unexpected control request #%d", c))
 			}
 		}
 	}
@@ -162,21 +163,21 @@ loop:
 // RunService runs the service targeted by name. From 06/27/2019, debug is not needed as the debug is always done, log system will
 // handle th level
 func RunService(name string) {
-	log.Debugln(fmt.Sprintf("DBTP:Entering func runService name :%s, isDebug : %t", name, isDebug))
+	log.Debugln(fmt.Sprintf("DBTP:Entering func runService name :%s", name))
 
-	defer elog.Close()
+	defer ezbevent.Close()
 
-	eventlog.Info(1, fmt.Sprintf("starting %s service", name))
+	ezbevent.Info(fmt.Sprintf("starting %s service", name))
 	log.Infoln(fmt.Sprintf("starting %s service", name))
 	run := svc.Run
 
 	err = run(name, &myservice{})
 	if err != nil {
-		eventlog.Error(1, fmt.Sprintf("%s service failed: %s", name, err.Error()))
+		ezbevent.Error(fmt.Sprintf("%s service failed: %s", name, err.Error()))
 		log.Errorln(fmt.Sprintf("%s service failed : %s", name, err.Error()))
 		return
 	}
-	eventlog.Info(1, fmt.Sprintf("%s service stopped", name))
+	ezbevent.Info(fmt.Sprintf("%s service stopped", name))
 	log.Infoln(fmt.Sprintf("%s service stoped", name))
 }
 
