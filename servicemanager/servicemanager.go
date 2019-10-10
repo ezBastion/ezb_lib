@@ -23,8 +23,6 @@ import (
 	"path/filepath"
 	"time"
 
-	ezbevent "github.com/ezbastion/ezb_lib/eventlogmanager"
-	"github.com/ezbastion/ezb_vault/server"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/sys/windows/svc"
 	eventlog "golang.org/x/sys/windows/svc/eventlog"
@@ -35,15 +33,13 @@ import (
 var exPath string
 var err error
 
-type myservice struct{}
-
 func init() {
 	ex, _ := os.Executable()
 	exPath = filepath.Dir(ex)
 }
 
 func exePath() (string, error) {
-	log.Debugln("DBTP:Entering func exePath")
+	log.Debugln("DBTP:servicemanager:Entering func exePath")
 	prog := os.Args[0]
 	p, err := filepath.Abs(prog)
 	if err != nil {
@@ -71,7 +67,7 @@ func exePath() (string, error) {
 
 // StartService starts the windows service targeted by name
 func StartService(name string) error {
-	log.Debugln(fmt.Sprintf("DBTP:Entering func startService name : %s", name))
+	log.Debugln(fmt.Sprintf("DBTP:servicemanager:Entering func startService name : %s", name))
 
 	m, err := mgr.Connect()
 	if err != nil {
@@ -95,7 +91,7 @@ func StartService(name string) error {
 
 // ControlService controls the service targetede by name
 func ControlService(name string, c svc.Cmd, to svc.State) error {
-	log.Debugln(fmt.Sprintf("DBTP:Entering func controlService name : %s", name))
+	log.Debugln(fmt.Sprintf("DBTP:servicemanager:Entering func controlService name : %s", name))
 
 	m, err := mgr.Connect()
 	if err != nil {
@@ -130,108 +126,77 @@ func ControlService(name string, c svc.Cmd, to svc.State) error {
 	return nil
 }
 
-func (m *myservice) Execute(args []string, r <-chan svc.ChangeRequest, changes chan<- svc.Status) (ssec bool, errno uint32) {
-
-	log.Debugln("DBTP:Entering func Execute")
-
-	const cmdsAccepted = svc.AcceptStop | svc.AcceptShutdown
-	changes <- svc.Status{State: svc.StartPending}
-	changes <- svc.Status{State: svc.Running, Accepts: cmdsAccepted}
-	serverchan := make(chan bool)
-	go server.MainGin(&serverchan)
-loop:
-	for {
-		select {
-		case c := <-r:
-			switch c.Cmd {
-			case svc.Interrogate:
-				changes <- c.CurrentStatus
-				time.Sleep(100 * time.Millisecond)
-				changes <- c.CurrentStatus
-			case svc.Stop, svc.Shutdown:
-				close(serverchan)
-				break loop
-			default:
-				ezbevent.Error(fmt.Sprintf("unexpected control request #%d", c))
-			}
-		}
-	}
-	changes <- svc.Status{State: svc.StopPending}
-	return
-}
-
-// RunService runs the service targeted by name. From 06/27/2019, debug is not needed as the debug is always done, log system will
-// handle th level
-func RunService(name string) {
-	log.Debugln(fmt.Sprintf("DBTP:Entering func runService name :%s", name))
-
-	defer ezbevent.Close()
-
-	ezbevent.Info(fmt.Sprintf("starting %s service", name))
-	log.Infoln(fmt.Sprintf("starting %s service", name))
-	run := svc.Run
-
-	err = run(name, &myservice{})
-	if err != nil {
-		ezbevent.Error(fmt.Sprintf("%s service failed: %s", name, err.Error()))
-		log.Errorln(fmt.Sprintf("%s service failed : %s", name, err.Error()))
-		return
-	}
-	ezbevent.Info(fmt.Sprintf("%s service stopped", name))
-	log.Infoln(fmt.Sprintf("%s service stoped", name))
-}
-
 // InstallService installs the service targeted by name
 func InstallService(name, desc string) error {
-	log.Debugln(fmt.Sprintf("DBTP:Entering func installService with name : %s, desc : %s", name, desc))
+	log.Debugln(fmt.Sprintf("DBTP:servicemanager:Entering func installService with name : %s, desc : %s", name, desc))
+	var errormsg string
+
 	exepath, err := exePath()
 	if err != nil {
+		errormsg = err.Error()
+		log.Errorln(errormsg)
 		return err
 	}
 	m, err := mgr.Connect()
 	if err != nil {
+		errormsg = err.Error()
+		log.Errorln(errormsg)
 		return err
 	}
 	defer m.Disconnect()
 	s, err := m.OpenService(name)
 	if err == nil {
 		s.Close()
-		return fmt.Errorf("service %s already exists", name)
+		errormsg = fmt.Sprintf("service %s already exists", name)
+		log.Errorln(errormsg)
+		return fmt.Errorf(errormsg)
 	}
 	s, err = m.CreateService(name, exepath, mgr.Config{DisplayName: desc}, "is", "auto-started")
 	if err != nil {
+		errormsg = err.Error()
+		log.Errorln(errormsg)
 		return err
 	}
 	defer s.Close()
 	err = eventlog.InstallAsEventCreate(name, eventlog.Error|eventlog.Warning|eventlog.Info)
 	if err != nil {
 		s.Delete()
-		return fmt.Errorf("SetupEventLogSource() failed: %s", err)
+		errormsg = fmt.Sprintf("SetupEventLogSource() failed: %s", err)
+		log.Errorln(errormsg)
+		return fmt.Errorf(errormsg)
 	}
 	return nil
 }
 
 // RemoveService remove the service trageted by name
 func RemoveService(name string) error {
-	log.Debugln(fmt.Sprintf("DBTP:Entering func removeService with name : %s", name))
+	log.Debugln(fmt.Sprintf("DBTP:servicemanager:Entering func removeService with name : %s", name))
+	var errormsg string
 
 	m, err := mgr.Connect()
 	if err != nil {
+		errormsg = err.Error()
+		log.Errorln(errormsg)
 		return err
 	}
 	defer m.Disconnect()
 	s, err := m.OpenService(name)
 	if err != nil {
-		return fmt.Errorf("service %s is not installed", name)
+		errormsg = fmt.Sprintf("service %s is not installed", name)
+		log.Errorln(errormsg)
+		return fmt.Errorf(errormsg)
 	}
 	defer s.Close()
 	err = s.Delete()
 	if err != nil {
+		log.Errorln(err.Error())
 		return err
 	}
 	err = eventlog.Remove(name)
 	if err != nil {
-		return fmt.Errorf("RemoveEventLogSource() failed: %s", err)
+		errormsg = fmt.Sprintf("RemoveEventLogSource() failed: %s", err)
+		log.Errorln(errormsg)
+		return fmt.Errorf(errormsg)
 	}
 	return nil
 }

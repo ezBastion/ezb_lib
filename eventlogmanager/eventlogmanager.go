@@ -17,42 +17,60 @@
 package eventlogmanager
 
 import (
+	"errors"
+	"fmt"
+
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/sys/windows/svc/debug"
 	"golang.org/x/sys/windows/svc/eventlog"
 )
 
 // EventLog management
 var elog debug.Log
+var eventname string
 var status int
 var eid int
+var osspecific bool
 
 func init() {
-	status = 0
+	status = -1
+	osspecific = false
 }
 
 // Open open a eventlog specified by name, returning nil or an error
 func Open(name string) error {
 	var err error
 
+	log.Debugln(fmt.Sprintf("DBTP:eventlogmanager:Entering func Open with name %s", name))
 	elog, err = eventlog.Open(name)
 	if err != nil {
+		log.Errorln(fmt.Sprintf("Cannot Open %s with error %s", name, err.Error()))
 		status = 255
 		return err
 	}
-
+	status = 0
+	log.Debugln(fmt.Sprintf("Event %s openes with status %d", name, status))
+	eventname = name
 	return nil
 }
 
 // Close closes the event
 func Close() error {
-
-	return elog.Close()
+	log.Debugln(fmt.Sprintf("DBTP:eventlogmanager:Entering func Close for event %s", eventname))
+	if status == 0 {
+		return elog.Close()
+	}
+	return errors.New("Cannot close a non created event")
 }
 
 // Info logs an info event into the windows eventlog system
 func Info(logline string) error {
-	if status == 0 {
-		elog.Info(1, logline)
+	if osspecific == false {
+		log.Infoln(logline)
+	} else {
+		if status == 0 {
+			elog.Info(1, logline)
+		}
 	}
 
 	return nil
@@ -60,8 +78,12 @@ func Info(logline string) error {
 
 // Error logs an error event into the windows eventlog system
 func Error(logline string) error {
-	if status == 0 {
-		elog.Error(1, logline)
+	if osspecific == false {
+		log.Errorln(logline)
+	} else {
+		if status == 0 {
+			elog.Error(1, logline)
+		}
 	}
 
 	return nil
@@ -69,8 +91,12 @@ func Error(logline string) error {
 
 // Warning logs an warning event into the windows eventlog system
 func Warning(logline string) error {
-	if status == 0 {
-		elog.Warning(1, logline)
+	if osspecific == false {
+		log.Warnln(logline)
+	} else {
+		if status == 0 {
+			elog.Warning(1, logline)
+		}
 	}
 
 	return nil
