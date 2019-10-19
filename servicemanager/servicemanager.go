@@ -39,7 +39,7 @@ func init() {
 }
 
 func exePath() (string, error) {
-	log.Debugln("DBTP:servicemanager:Entering func exePath")
+
 	prog := os.Args[0]
 	p, err := filepath.Abs(prog)
 	if err != nil {
@@ -67,7 +67,6 @@ func exePath() (string, error) {
 
 // StartService starts the windows service targeted by name
 func StartService(name string) error {
-	log.Debugln(fmt.Sprintf("DBTP:servicemanager:Entering func startService name : %s", name))
 
 	m, err := mgr.Connect()
 	if err != nil {
@@ -91,7 +90,6 @@ func StartService(name string) error {
 
 // ControlService controls the service targetede by name
 func ControlService(name string, c svc.Cmd, to svc.State) error {
-	log.Debugln(fmt.Sprintf("DBTP:servicemanager:Entering func controlService name : %s", name))
 
 	m, err := mgr.Connect()
 	if err != nil {
@@ -128,7 +126,6 @@ func ControlService(name string, c svc.Cmd, to svc.State) error {
 
 // InstallService installs the service targeted by name
 func InstallService(name, desc string) error {
-	log.Debugln(fmt.Sprintf("DBTP:servicemanager:Entering func installService with name : %s, desc : %s", name, desc))
 	var errormsg string
 
 	exepath, err := exePath()
@@ -170,7 +167,6 @@ func InstallService(name, desc string) error {
 
 // RemoveService remove the service trageted by name
 func RemoveService(name string) error {
-	log.Debugln(fmt.Sprintf("DBTP:servicemanager:Entering func removeService with name : %s", name))
 	var errormsg string
 
 	m, err := mgr.Connect()

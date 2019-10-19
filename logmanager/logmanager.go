@@ -18,6 +18,8 @@ package logmanager
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"path"
 	"runtime"
 	"strings"
@@ -55,12 +57,15 @@ func SetLogLevel(LogLevel string, exPath string, fileName string, maxSize int, m
 	default:
 		return fmt.Errorf("ezb_lib/logmanager/SetLogLevel() failed: Bad log level name")
 	}
-	log.SetOutput(&lumberjack.Logger{
+	lj := &lumberjack.Logger{
 		Filename:   fileName,
 		MaxSize:    maxSize,
 		MaxBackups: maxBackups,
 		MaxAge:     maxAge,
-	})
+	}
+
+	mWriter := io.MultiWriter(os.Stderr, lj)
+	log.SetOutput(mWriter)
 
 	log.Info("Log system initialized.")
 	return nil
