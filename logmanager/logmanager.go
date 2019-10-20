@@ -57,6 +57,9 @@ func SetLogLevel(LogLevel string, exPath string, fileName string, maxSize int, m
 	default:
 		return fmt.Errorf("ezb_lib/logmanager/SetLogLevel() failed: Bad log level name")
 	}
+	// Adding the method and line caller, easier to debug
+	log.SetReportCaller(true)
+
 	lj := &lumberjack.Logger{
 		Filename:   fileName,
 		MaxSize:    maxSize,

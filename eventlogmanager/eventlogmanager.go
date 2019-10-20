@@ -41,7 +41,6 @@ func init() {
 func Open(name string) error {
 	var err error
 
-	log.Debugln(fmt.Sprintf("DBTP:eventlogmanager:Entering func Open with name %s", name))
 	elog, err = eventlog.Open(name)
 	if err != nil {
 		log.Errorln(fmt.Sprintf("Cannot Open %s with error %s", name, err.Error()))
@@ -56,7 +55,6 @@ func Open(name string) error {
 
 // Close closes the event
 func Close() error {
-	log.Debugln(fmt.Sprintf("DBTP:eventlogmanager:Entering func Close for event %s", eventname))
 	if status == 0 {
 		return elog.Close()
 	}
