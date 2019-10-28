@@ -23,7 +23,7 @@ import (
 	"path"
 	"runtime"
 	"strings"
-
+	ezbevent "github.com/ezbastion/ezb_lib/eventlogmanager"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
@@ -35,8 +35,16 @@ type callInfo struct {
 	line        int
 }
 
+// EventLog management
+var eid int
+var osspecific bool
+
+func init() {
+	osspecific = true
+}
+
 // SetLogLevel set logrus level
-func SetLogLevel(LogLevel string, exPath string, fileName string, maxSize int, maxBackups int, maxAge int) error {
+func SetLogLevel(LogLevel string, exPath string, fileName string, maxSize int, maxBackups int, maxAge int, interactive bool) error {
 	log.SetFormatter(&log.JSONFormatter{})
 	switch LogLevel {
 	case "debug":
@@ -67,9 +75,12 @@ func SetLogLevel(LogLevel string, exPath string, fileName string, maxSize int, m
 		MaxAge:     maxAge,
 	}
 
+	if interactive {
 	mWriter := io.MultiWriter(os.Stderr, lj)
-	log.SetOutput(mWriter)
-
+		log.SetOutput(mWriter)
+	} else {
+		log.SetOutput(lj)
+	}
 	log.Info("Log system initialized.")
 	return nil
 
@@ -97,3 +108,65 @@ func retrieveCallInfo() *callInfo {
 		line:        line,
 	}
 }
+
+func StartWindowsEvent(name string) {
+	ezbevent.Open(name)
+}
+
+// Info logs an info event into the windows eventlog system
+func Debug(logline string) error {
+	if osspecific == false {
+		log.Debugln(logline)
+	} else {
+		if ezbevent.Status == 0 {
+			ezbevent.Elog.Info(1, "DBG : "+logline)
+		}
+	}
+
+	return nil
+}
+
+func Info(logline string) error {
+	if osspecific == false {
+		log.Infoln(logline)
+	} else {
+		if ezbevent.Status == 0 {
+			ezbevent.Elog.Info(1, logline)
+		}
+	}
+
+	return nil
+}
+
+// Error logs an error event into the windows eventlog system
+func Error(logline string) error {
+	if osspecific == false {
+		log.Errorln(logline)
+	} else {
+		if ezbevent.Status == 0 {
+			ezbevent.Elog.Error(1, logline)
+		}
+	}
+
+	return nil
+}
+
+// Warning logs an warning event into the windows eventlog system
+func Warning(logline string) error {
+	if osspecific == false {
+		log.Warnln(logline)
+	} else {
+		if ezbevent.Status == 0 {
+			ezbevent.Elog.Warning(1, logline)
+		}
+	}
+
+	return nil
+}
+
+func Fatal(logline string) {
+	if osspecific == false {
+		log.Fatal(logline)
+	}
+}
+
