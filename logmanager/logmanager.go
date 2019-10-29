@@ -67,9 +67,10 @@ func SetLogLevel(LogLevel string, exPath string, fileName string, maxSize int, m
 	}
 	// Adding the method and line caller, easier to debug
 	log.SetReportCaller(true)
+	abspathfilename := exPath+string(os.PathSeparator)+fileName
 
 	lj := &lumberjack.Logger{
-		Filename:   fileName,
+		Filename:   abspathfilename,
 		MaxSize:    maxSize,
 		MaxBackups: maxBackups,
 		MaxAge:     maxAge,
@@ -115,9 +116,8 @@ func StartWindowsEvent(name string) {
 
 // Info logs an info event into the windows eventlog system
 func Debug(logline string) error {
-	if osspecific == false {
-		log.Debugln(logline)
-	} else {
+	log.Debugln(logline)
+	if osspecific == true {
 		if ezbevent.Status == 0 {
 			ezbevent.Elog.Info(1, "DBG : "+logline)
 		}
@@ -127,9 +127,8 @@ func Debug(logline string) error {
 }
 
 func Info(logline string) error {
-	if osspecific == false {
-		log.Infoln(logline)
-	} else {
+	log.Infoln(logline)
+	if osspecific == true {
 		if ezbevent.Status == 0 {
 			ezbevent.Elog.Info(1, logline)
 		}
@@ -140,9 +139,8 @@ func Info(logline string) error {
 
 // Error logs an error event into the windows eventlog system
 func Error(logline string) error {
-	if osspecific == false {
-		log.Errorln(logline)
-	} else {
+	log.Errorln(logline)
+	if osspecific == true {
 		if ezbevent.Status == 0 {
 			ezbevent.Elog.Error(1, logline)
 		}
@@ -153,9 +151,8 @@ func Error(logline string) error {
 
 // Warning logs an warning event into the windows eventlog system
 func Warning(logline string) error {
-	if osspecific == false {
-		log.Warnln(logline)
-	} else {
+	log.Warnln(logline)
+	if osspecific == true {
 		if ezbevent.Status == 0 {
 			ezbevent.Elog.Warning(1, logline)
 		}
@@ -165,8 +162,6 @@ func Warning(logline string) error {
 }
 
 func Fatal(logline string) {
-	if osspecific == false {
-		log.Fatal(logline)
-	}
+	log.Fatal(logline)
 }
 
