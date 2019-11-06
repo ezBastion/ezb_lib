@@ -111,7 +111,11 @@ func retrieveCallInfo() *callInfo {
 }
 
 func StartWindowsEvent(name string) {
-	ezbevent.Open(name)
+	if osspecific == true {
+		if ezbevent.Status == 0 {
+				ezbevent.Open(name)
+		}
+	}
 }
 
 // Info logs an info event into the windows eventlog system
@@ -119,7 +123,7 @@ func Debug(logline string) error {
 	log.Debugln(logline)
 	if osspecific == true {
 		if ezbevent.Status == 0 {
-			ezbevent.Elog.Info(1, "DBG : "+logline)
+			ezbevent.Elog.Info(1, "DEBUG : "+logline)
 		}
 	}
 
