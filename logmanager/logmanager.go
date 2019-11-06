@@ -110,6 +110,10 @@ func retrieveCallInfo() *callInfo {
 	}
 }
 
+func WithFields(s1 string,s2 string) {
+	log.WithFields(log.Fields{s1:s2})
+}
+
 func StartWindowsEvent(name string) {
 	if osspecific == true {
 		if ezbevent.Status == 0 {
