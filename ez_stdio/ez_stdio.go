@@ -67,3 +67,18 @@ func AskForValue(s, def string, pattern string) string {
 		}
 	}
 }
+
+func AskForStringValue(s string) string {
+	reader := bufio.NewReader(os.Stdin)
+	for {
+		fmt.Printf("%s ", s)
+
+		response, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		response = strings.TrimSpace(response)
+		return response
+	}
+}
