@@ -45,7 +45,7 @@ func init() {
 }
 
 // SetLogLevel set logrus level
-func SetLogLevel(LogLevel string, exPath string, fileName string, maxSize int, maxBackups int, maxAge int, interactive bool) error {
+func SetLogLevel(LogLevel string, exPath string, fileName string, maxSize int, maxBackups int, maxAge int, interactive bool, reportcaller bool) error {
 	log.SetFormatter(&log.JSONFormatter{})
 	level = LogLevel
 
@@ -69,7 +69,7 @@ func SetLogLevel(LogLevel string, exPath string, fileName string, maxSize int, m
 		return fmt.Errorf("ezb_lib/logmanager/SetLogLevel() failed: Bad log level name")
 	}
 	// Adding the method and line caller, easier to debug
-	log.SetReportCaller(true)
+	log.SetReportCaller(reportcaller)
 	abspathfilename := exPath+string(os.PathSeparator)+fileName
 
 	lj := &lumberjack.Logger{
