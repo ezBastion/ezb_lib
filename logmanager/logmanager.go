@@ -38,6 +38,7 @@ type callInfo struct {
 // EventLog management
 var eid int
 var osspecific bool
+var level string
 
 func init() {
 	osspecific = true
@@ -46,6 +47,8 @@ func init() {
 // SetLogLevel set logrus level
 func SetLogLevel(LogLevel string, exPath string, fileName string, maxSize int, maxBackups int, maxAge int, interactive bool) error {
 	log.SetFormatter(&log.JSONFormatter{})
+	level = LogLevel
+
 	switch LogLevel {
 	case "debug":
 		log.SetLevel(log.DebugLevel)
@@ -125,9 +128,11 @@ func StartWindowsEvent(name string) {
 // Info logs an info event into the windows eventlog system
 func Debug(logline string) error {
 	log.Debugln(logline)
-	if osspecific == true {
-		if ezbevent.Status == 0 {
-			ezbevent.Elog.Info(1, "DEBUG : "+logline)
+	if level == "debug" {
+		if osspecific == true {
+			if ezbevent.Status == 0 {
+				ezbevent.Elog.Info(1, "DEBUG : "+logline)
+			}
 		}
 	}
 
@@ -136,36 +141,39 @@ func Debug(logline string) error {
 
 func Info(logline string) error {
 	log.Infoln(logline)
-	if osspecific == true {
-		if ezbevent.Status == 0 {
-			ezbevent.Elog.Info(1, logline)
+	if level == "debug" || (level == "info") {
+		if osspecific == true {
+			if ezbevent.Status == 0 {
+				ezbevent.Elog.Info(1, logline)
+			}
 		}
 	}
-
 	return nil
 }
 
 // Error logs an error event into the windows eventlog system
 func Error(logline string) error {
 	log.Errorln(logline)
-	if osspecific == true {
-		if ezbevent.Status == 0 {
-			ezbevent.Elog.Error(1, logline)
+	if (level == "info") || (level == "warning") || (level == "error") || (level == "debug") {
+		if osspecific == true {
+			if ezbevent.Status == 0 {
+				ezbevent.Elog.Error(1, logline)
+			}
 		}
 	}
-
 	return nil
 }
 
 // Warning logs an warning event into the windows eventlog system
 func Warning(logline string) error {
 	log.Warnln(logline)
-	if osspecific == true {
-		if ezbevent.Status == 0 {
-			ezbevent.Elog.Warning(1, logline)
+	if (level == "debug") || (level == "info") || (level == "warning") {
+		if osspecific == true {
+			if ezbevent.Status == 0 {
+				ezbevent.Elog.Warning(1, logline)
+			}
 		}
 	}
-
 	return nil
 }
 
