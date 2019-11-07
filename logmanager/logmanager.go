@@ -45,7 +45,7 @@ func init() {
 }
 
 // SetLogLevel set logrus level
-func SetLogLevel(LogLevel string, exPath string, fileName string, maxSize int, maxBackups int, maxAge int, interactive bool, reportcaller bool) error {
+func SetLogLevel(LogLevel string, exPath string, fileName string, maxSize int, maxBackups int, maxAge int, interactive bool, reportcaller bool, jsontostdout bool) error {
 	log.SetFormatter(&log.JSONFormatter{})
 	level = LogLevel
 
@@ -79,7 +79,7 @@ func SetLogLevel(LogLevel string, exPath string, fileName string, maxSize int, m
 		MaxAge:     maxAge,
 	}
 
-	if interactive {
+	if jsontostdout {
 	mWriter := io.MultiWriter(os.Stderr, lj)
 		log.SetOutput(mWriter)
 	} else {
