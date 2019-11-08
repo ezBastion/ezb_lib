@@ -139,8 +139,16 @@ func Debug(logline string) error {
 	return nil
 }
 
-func Info(logline string) error {
+func Info(logline string, forceStdout ...bool) error {
 	log.Infoln(logline)
+	output := false
+	if len(forceStdout) > 0 {
+		output = forceStdout[0]
+	}
+
+	if output {
+		fmt.Println(logline)
+	}
 	if level == "debug" || (level == "info") {
 		if osspecific == true {
 			if ezbevent.Status == 0 {
