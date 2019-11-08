@@ -21,12 +21,14 @@ import (
 	"os"
 	"regexp"
 	"strings"
+
+	"github.com/ezbastion/ezb_lib/logmanager"
 )
 
 // askForConfirmation : Reads the stdin for an confirmation aka answer - ONLY yes/no
 func AskForConfirmation(s string) bool {
 	reader := bufio.NewReader(os.Stdin)
-
+	logmanager.Debug(fmt.Sprintf("AskForConfirmation : %s",s))
 	for {
 		fmt.Printf("\n%s [y/n]: ", s)
 
@@ -38,8 +40,10 @@ func AskForConfirmation(s string) bool {
 		response = strings.ToLower(strings.TrimSpace(response))
 
 		if response == "y" || response == "yes" {
+			logmanager.Debug("AskForConfirmation : TRUE")
 			return true
 		} else if response == "n" || response == "no" {
+			logmanager.Debug("AskForConfirmation : FALSE")
 			return false
 		}
 	}
@@ -49,6 +53,7 @@ func AskForConfirmation(s string) bool {
 func AskForValue(s, def string, pattern string) string {
 	reader := bufio.NewReader(os.Stdin)
 	re := regexp.MustCompile(pattern)
+	logmanager.Debug(fmt.Sprintf("AskForValue : %s with default %s",s, def))
 	for {
 		fmt.Printf("%s [%s]: ", s, def)
 
@@ -61,6 +66,7 @@ func AskForValue(s, def string, pattern string) string {
 		if response == "" {
 			return def
 		} else if re.MatchString(response) {
+			logmanager.Debug(fmt.Sprintf("AskForValue return : %s",response))
 			return response
 		} else {
 			fmt.Printf("[%s] wrong format, must match (%s)\n", response, pattern)
@@ -70,6 +76,7 @@ func AskForValue(s, def string, pattern string) string {
 
 func AskForStringValue(s string) string {
 	reader := bufio.NewReader(os.Stdin)
+	logmanager.Debug(fmt.Sprintf("AskForStringValue : %s",s))
 	for {
 		fmt.Printf("%s ", s)
 
@@ -79,6 +86,7 @@ func AskForStringValue(s string) string {
 		}
 
 		response = strings.TrimSpace(response)
+		logmanager.Debug(fmt.Sprintf("AskForStringValue return : %s",response))
 		return response
 	}
 }
