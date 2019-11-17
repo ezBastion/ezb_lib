@@ -29,7 +29,7 @@ import (
 	"os"
 )
 
-func newCertificateRequest(commonName string, duration int, addresses []string) *x509.CertificateRequest {
+func NewCertificateRequest(commonName string, duration int, addresses []string) *x509.CertificateRequest {
 	certificate := x509.CertificateRequest{
 		Subject: pkix.Name{
 			Organization: []string{"ezBastion"},
@@ -49,7 +49,7 @@ func newCertificateRequest(commonName string, duration int, addresses []string) 
 	return &certificate
 }
 
-func generate(certificate *x509.CertificateRequest, ezbpki, certFilename, keyFilename, caFileName string) {
+func Generate(certificate *x509.CertificateRequest, ezbpki, certFilename, keyFilename, caFileName string) {
 	priv, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
 		fmt.Println("Failed to generate private key:", err)
@@ -125,7 +125,7 @@ func generate(certificate *x509.CertificateRequest, ezbpki, certFilename, keyFil
 		return
 	}
 
-	err = validateCertificate(newCert, rootCert)
+	err = ValidateCertificate(newCert, rootCert)
 	if err != nil {
 		return
 	}
@@ -161,7 +161,7 @@ func generate(certificate *x509.CertificateRequest, ezbpki, certFilename, keyFil
 
 }
 
-func validateCertificate(newCert *x509.Certificate, rootCert *x509.Certificate) error {
+func ValidateCertificate(newCert *x509.Certificate, rootCert *x509.Certificate) error {
 	roots := x509.NewCertPool()
 	roots.AddCert(rootCert)
 	verifyOptions := x509.VerifyOptions{
