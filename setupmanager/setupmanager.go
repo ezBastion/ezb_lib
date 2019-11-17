@@ -91,5 +91,21 @@ func AskForValue(s, def string, pattern string) string {
 		} else {
 			fmt.Printf("[%s] wrong format, must match (%s)\n", response, pattern)
 		}
+<<<<<<< HEAD
+=======
+		fmt.Printf("[%s] wrong format, must match (%s)\n", response, pattern)
+	}
+}
+
+// CheckFolder
+func CheckFolder(exPath string) error {
+
+	if _, err := os.Stat(path.Join(exPath, "cert")); os.IsNotExist(err) {
+		err = os.MkdirAll(path.Join(exPath, "cert"), 0600)
+		if err != nil {
+			return err
+		}
+		log.Println("Make cert folder.")
+>>>>>>> 6a5ce0a8749038afa3ec71a0628dbc7e36664633
 	}
 }
