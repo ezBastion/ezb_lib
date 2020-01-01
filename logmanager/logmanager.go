@@ -48,26 +48,22 @@ func init() {
 func SetLogLevel(LogLevel string, exPath string, fileName string, maxSize int, maxBackups int, maxAge int, interactive bool, reportcaller bool, jsontostdout bool) error {
 	log.SetFormatter(&log.JSONFormatter{})
 	level = LogLevel
-
 	switch LogLevel {
 	case "debug":
 		log.SetLevel(log.DebugLevel)
-		break
 	case "info":
 		log.SetLevel(log.InfoLevel)
-		break
 	case "warning":
 		log.SetLevel(log.WarnLevel)
-		break
 	case "error":
 		log.SetLevel(log.ErrorLevel)
-		break
 	case "critical":
 		log.SetLevel(log.FatalLevel)
-		break
 	default:
-		return fmt.Errorf("ezb_lib/logmanager/SetLogLevel() failed: Bad log level name")
+		fmt.Errorf("ezb_lib/logmanager/SetLogLevel() failed: Bad log level name, set to Info")
+		log.SetLevel(log.InfoLevel)
 	}
+
 	// Adding the method and line caller, easier to debug
 	log.SetReportCaller(reportcaller)
 	abspathfilename := exPath+string(os.PathSeparator)+fileName
@@ -80,12 +76,13 @@ func SetLogLevel(LogLevel string, exPath string, fileName string, maxSize int, m
 	}
 
 	if jsontostdout {
-	mWriter := io.MultiWriter(os.Stderr, lj)
+		mWriter := io.MultiWriter(os.Stderr, lj)
 		log.SetOutput(mWriter)
 	} else {
 		log.SetOutput(lj)
 	}
 	log.Info("Log system initialized.")
+
 	return nil
 
 }
