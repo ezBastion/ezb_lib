@@ -18,12 +18,19 @@ package logmanager
 
 import (
 	"fmt"
+<<<<<<< HEAD
+	"path"
+	"runtime"
+	"strings"
+
+=======
 	"io"
 	"os"
 	"path"
 	"runtime"
 	"strings"
 	ezbevent "github.com/ezbastion/ezb_lib/eventlogmanager"
+>>>>>>> 6a5ce0a8749038afa3ec71a0628dbc7e36664633
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
@@ -35,6 +42,10 @@ type callInfo struct {
 	line        int
 }
 
+<<<<<<< HEAD
+// SetLogLevel set logrus level
+func SetLogLevel(LogLevel string, exPath string, fileName string, maxSize int, maxBackups int, maxAge int) error {
+=======
 // EventLog management
 var eid int
 var osspecific bool
@@ -46,6 +57,7 @@ func init() {
 
 // SetLogLevel set logrus level
 func SetLogLevel(LogLevel string, exPath string, fileName string, maxSize int, maxBackups int, maxAge int, interactive bool, reportcaller bool, jsontostdout bool) error {
+>>>>>>> 6a5ce0a8749038afa3ec71a0628dbc7e36664633
 	log.SetFormatter(&log.JSONFormatter{})
 	level = LogLevel
 	switch LogLevel {
@@ -63,7 +75,18 @@ func SetLogLevel(LogLevel string, exPath string, fileName string, maxSize int, m
 		fmt.Errorf("ezb_lib/logmanager/SetLogLevel() failed: Bad log level name, set to Info")
 		log.SetLevel(log.InfoLevel)
 	}
+<<<<<<< HEAD
 
+=======
+<<<<<<< HEAD
+	log.SetOutput(&lumberjack.Logger{
+		Filename:   fileName,
+		MaxSize:    maxSize,
+		MaxBackups: maxBackups,
+		MaxAge:     maxAge,
+	})
+=======
+>>>>>>> ed80331f483d63fe1c88c97955fe922e79193bb1
 	// Adding the method and line caller, easier to debug
 	log.SetReportCaller(reportcaller)
 	abspathfilename := exPath+string(os.PathSeparator)+fileName
@@ -166,6 +189,7 @@ func Error(logline string) error {
 			}
 		}
 	}
+>>>>>>> 6a5ce0a8749038afa3ec71a0628dbc7e36664633
 	return nil
 }
 
@@ -182,7 +206,32 @@ func Warning(logline string) error {
 	return nil
 }
 
+<<<<<<< HEAD
+func retrieveCallInfo() *callInfo {
+	pc, file, line, _ := runtime.Caller(2)
+	_, fileName := path.Split(file)
+	parts := strings.Split(runtime.FuncForPC(pc).Name(), ".")
+	pl := len(parts)
+	packageName := ""
+	funcName := parts[pl-1]
+
+	if parts[pl-2][0] == '(' {
+		funcName = parts[pl-2] + "." + funcName
+		packageName = strings.Join(parts[0:pl-2], ".")
+	} else {
+		packageName = strings.Join(parts[0:pl-1], ".")
+	}
+
+	return &callInfo{
+		packageName: packageName,
+		fileName:    fileName,
+		funcName:    funcName,
+		line:        line,
+	}
+}
+=======
 func Fatal(logline string) {
 	log.Fatal(logline)
 }
 
+>>>>>>> 6a5ce0a8749038afa3ec71a0628dbc7e36664633
