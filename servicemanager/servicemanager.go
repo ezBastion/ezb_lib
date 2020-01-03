@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -157,6 +158,10 @@ func InstallService(name, desc string) error {
 	defer s.Close()
 	err = eventlog.InstallAsEventCreate(name, eventlog.Error|eventlog.Warning|eventlog.Info)
 	if err != nil {
+		if strings.Contains(err.Error(), "ezb_vault registry key already exists") {
+			log.Warnln("Event registry key already exists, skipping warn and continue")
+			return nil
+		}
 		s.Delete()
 		errormsg = fmt.Sprintf("SetupEventLogSource() failed: %s", err)
 		log.Errorln(errormsg)
