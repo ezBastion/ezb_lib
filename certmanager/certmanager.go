@@ -49,21 +49,20 @@ func NewCertificateRequest(commonName string, duration int, addresses []string) 
 	return &certificate
 }
 
-func Generate(certificate *x509.CertificateRequest, ezbpki, certFilename, keyFilename, caFileName string) {
+func Generate(certificate *x509.CertificateRequest, ezbpki, certFilename, keyFilename, caFileName string) error {
 	priv, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
-		fmt.Println("Failed to generate private key:", err)
-		os.Exit(1)
+		return fmt.Errorf("Failed to generate private key: %v", err)
 	}
 
 	derBytes, err := x509.CreateCertificateRequest(rand.Reader, certificate, priv)
 	if err != nil {
-		return
+		return err
 	}
 	fmt.Println("Created Certificate Signing Request for client.")
 	conn, err := net.Dial("tcp", ezbpki)
 	if err != nil {
-		return
+		return err
 	}
 	defer conn.Close()
 	fmt.Println("Successfully connected to Root Certificate Authority.")
@@ -73,16 +72,16 @@ func Generate(certificate *x509.CertificateRequest, ezbpki, certFilename, keyFil
 	binary.LittleEndian.PutUint16(header, uint16(len(derBytes)))
 	_, err = writer.Write(header)
 	if err != nil {
-		return
+		return err
 	}
 	// Now send the certificate request data
 	_, err = writer.Write(derBytes)
 	if err != nil {
-		return
+		return err
 	}
 	err = writer.Flush()
 	if err != nil {
-		return
+		return err
 	}
 	fmt.Println("Transmitted Certificate Signing Request to RootCA.")
 	// The RootCA will now send our signed certificate back for us to read.
@@ -91,74 +90,70 @@ func Generate(certificate *x509.CertificateRequest, ezbpki, certFilename, keyFil
 	certHeader := make([]byte, 2)
 	_, err = reader.Read(certHeader)
 	if err != nil {
-		return
+		return err
 	}
 	certSize := binary.LittleEndian.Uint16(certHeader)
 	// Now read the certificate data.
 	certBytes := make([]byte, certSize)
 	_, err = reader.Read(certBytes)
 	if err != nil {
-		return
+		return err
 	}
 	fmt.Println("Received new Certificate from RootCA.")
 	newCert, err := x509.ParseCertificate(certBytes)
 	if err != nil {
-		return
+		return err
 	}
 
 	// Finally, the RootCA will send its own certificate back so that we can validate the new certificate.
 	rootCertHeader := make([]byte, 2)
 	_, err = reader.Read(rootCertHeader)
 	if err != nil {
-		return
+		return err
 	}
 	rootCertSize := binary.LittleEndian.Uint16(rootCertHeader)
 	// Now read the certificate data.
 	rootCertBytes := make([]byte, rootCertSize)
 	_, err = reader.Read(rootCertBytes)
 	if err != nil {
-		return
+		return err
 	}
 	fmt.Println("Received Root Certificate from RootCA.")
 	rootCert, err := x509.ParseCertificate(rootCertBytes)
 	if err != nil {
-		return
+		return err
 	}
 
 	err = ValidateCertificate(newCert, rootCert)
 	if err != nil {
-		return
+		return err
 	}
 	// all good save the files
 	keyOut, err := os.OpenFile(keyFilename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
-		fmt.Println("Failed to open key "+keyFilename+" for writing:", err)
-		os.Exit(1)
+		return fmt.Errorf("Failed to open key %v for writing: %v", keyFilename, err)
 	}
 	b, err := x509.MarshalECPrivateKey(priv)
 	if err != nil {
-		fmt.Println("Failed to marshal priv:", err)
-		os.Exit(1)
+		return fmt.Errorf("Failed to marshal priv: %v", err)
 	}
 	pem.Encode(keyOut, &pem.Block{Type: "EC PRIVATE KEY", Bytes: b})
 	keyOut.Close()
 
 	certOut, err := os.Create(certFilename)
 	if err != nil {
-		fmt.Println("Failed to open "+certFilename+" for writing:", err)
-		os.Exit(1)
+		return fmt.Errorf("Failed to open %v for writing: %v", certFilename, err)
 	}
 	pem.Encode(certOut, &pem.Block{Type: "CERTIFICATE", Bytes: certBytes})
 	certOut.Close()
 
 	caOut, err := os.Create(caFileName)
 	if err != nil {
-		fmt.Println("Failed to open "+caFileName+" for writing:", err)
-		os.Exit(1)
+		return fmt.Errorf("Failed to open %v for writing: %v", caFileName, err)
 	}
 	pem.Encode(caOut, &pem.Block{Type: "CERTIFICATE", Bytes: rootCertBytes})
 	caOut.Close()
-
+	return nil
 }
 
 func ValidateCertificate(newCert *x509.Certificate, rootCert *x509.Certificate) error {
