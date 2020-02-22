@@ -39,7 +39,7 @@ func Open(name string) error {
 	Elog, err = eventlog.Open(name)
 	if err != nil {
 		Status = 255
-		return errors.New(fmt.Sprintf("Cannot Open %s with error %s", name, err.Error()))
+		return fmt.Errorf("Cannot Open %s with error %s", name, err.Error())
 	}
 	Status = 0
 	Eventname = name
@@ -53,4 +53,3 @@ func Close() error {
 	}
 	return errors.New("Cannot close a non created event")
 }
-
