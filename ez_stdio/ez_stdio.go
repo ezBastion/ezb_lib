@@ -22,7 +22,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/ezbastion/ezb_lib/logmanager"
+	"github.com/ezBastion/ezb_lib/logmanager"
 )
 
 // askForConfirmation : Reads the stdin for an confirmation aka answer - ONLY yes/no

@@ -24,7 +24,7 @@ import (
 	"runtime"
 	"strings"
 
-	ezbevent "github.com/ezbastion/ezb_lib/eventlogmanager"
+	ezbevent "github.com/ezBastion/ezb_lib/eventlogmanager"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
