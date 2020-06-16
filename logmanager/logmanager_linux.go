@@ -24,7 +24,6 @@ import (
 	"runtime"
 	"strings"
 
-	ezbevent "github.com/ezBastion/ezb_lib/eventlogmanager"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
@@ -37,13 +36,7 @@ type callInfo struct {
 }
 
 // EventLog management
-var eid int
-var osspecific bool
 var level string
-
-func init() {
-	osspecific = true
-}
 
 // SetLogLevel set logrus level
 func SetLogLevel(LogLevel string, exPath string, fileName string, maxSize int, maxBackups int, maxAge int, interactive bool, reportcaller bool, jsontostdout bool) error {
@@ -115,25 +108,9 @@ func WithFields(s1 string, s2 string) {
 	log.WithFields(log.Fields{s1: s2})
 }
 
-func StartWindowsEvent(name string) {
-	if osspecific == true {
-		if ezbevent.Status == 0 {
-			ezbevent.Open(name)
-		}
-	}
-}
-
 // Info logs an info event into the windows eventlog system
 func Debug(logline string) error {
 	log.Debugln(logline)
-	if level == "debug" {
-		if osspecific == true {
-			if ezbevent.Status == 0 {
-				ezbevent.Elog.Info(1, "DEBUG : "+logline)
-			}
-		}
-	}
-
 	return nil
 }
 
@@ -147,39 +124,19 @@ func Info(logline string, forceStdout ...bool) error {
 	if output {
 		fmt.Println(logline)
 	}
-	if level == "debug" || (level == "info") {
-		if osspecific == true {
-			if ezbevent.Status == 0 {
-				ezbevent.Elog.Info(1, logline)
-			}
-		}
-	}
+
 	return nil
 }
 
 // Error logs an error event into the windows eventlog system
 func Error(logline string) error {
 	log.Errorln(logline)
-	if (level == "info") || (level == "warning") || (level == "error") || (level == "debug") {
-		if osspecific == true {
-			if ezbevent.Status == 0 {
-				ezbevent.Elog.Error(1, logline)
-			}
-		}
-	}
 	return nil
 }
 
 // Warning logs an warning event into the windows eventlog system
 func Warning(logline string) error {
 	log.Warnln(logline)
-	if (level == "debug") || (level == "info") || (level == "warning") {
-		if osspecific == true {
-			if ezbevent.Status == 0 {
-				ezbevent.Elog.Warning(1, logline)
-			}
-		}
-	}
 	return nil
 }
 
